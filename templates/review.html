@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block content %}
+<form id="rev" method="post">
+    {{ form.hidden_tag() }}
+
+    <div>
+        <img src="/{{p.image}}">
+        <h1>{{p.name}}</h1>
+        <h3>${{p.price}}</h3>
+    </div>
+
+    <section>
+        <h1>
+            How would you rate this product
+            (Out of ten)? 
+        </h1>
+
+        <div id="bob">
+            <h3>HORRIBLE</h3>
+                {{form.rate(class="inputRange")}}
+            <h3>GREAT</h3>
+        </div>
+
+        <h1 style="top: 150px;">
+            Why do you feel this way?
+        </h1>
+
+        {{form.review()}}
+
+        {{form.sub()}}
+    </section>
+</form>
+
+<script>
+    const inputRange = document.getElementById("rate");
+    const activeColor = "#999999";
+    const inactiveColor = "#dddddd";
+
+    inputRange.addEventListener("input", function() {
+    const ratio = (this.value - this.min) / (this.max - this.min) * 100;
+    this.style.background = `linear-gradient(90deg, ${activeColor} ${ratio}%, ${inactiveColor} ${ratio}%)`;
+    });
+</script>
+{% endblock %}

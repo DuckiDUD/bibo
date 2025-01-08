@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block content %}
+<main id="l-main">
+    <img src="/{{product.image}}">
+
+    <div id="col1">
+        <h1>Product Name</h1>
+        <div>{{product.name}}</div>
+    </div>
+
+    <div id="col2">
+        <h1>Product Price</h1>
+        <div>${{product.price}}</div>
+    </div>
+
+    <div id="col3">
+        <button id="add-to-cart">Add to Cart</button>
+        <button id="like"><i id="iconn" class="fa-solid fa-heart"></i></button>
+    </div>
+
+    <div id="col4">
+        <h1>Description</h1>
+        <h3>
+            {{product.description}}
+        </h3>
+    </div>
+
+    {% if product.reviews != "[]" %}
+    <div id="rating">
+        <div id="outer" style="background-image: conic-gradient(#ffea63 {{360 * (median/10)}}deg, #fff 0deg);">
+            <div id="inner">
+                <h1>
+                    {{median}}/₁₀
+                </h1>
+            </div>
+        </div>
+
+        <div id="div">
+            <h3>This Product is</h3>
+            {% if median > 8 %}
+                <h1>Very Good!</h1>
+            {% elif median > 5 %}
+                <h1>Pretty Good</h1>
+            {% else %}
+                <h1>Pretty bad</h1>
+            {% endif %}
+        </div>
+    </div>
+
+    <h1>Reviews</h1>
+
+    <div id="reviews">
+        {%for rev in reviews%}
+
+            <div class="review">
+                <h1 class="r-usr">{{rev["name"]}}</h1>
+                <h1 class="rate">
+                    {{rev.score}}/₁₀
+                </h1>
+
+                <h3 class="comment">
+                    {{rev.review}}
+                </h3>
+                
+            </div>
+
+        {% endfor %}
+    </div>
+    {%endif%}
+
+    <div id="btns">
+        <button id="lv">Leave a Review</button>
+    </div>
+</main>
+
+<script>
+    let like = document.getElementById("like")
+    let itag = document.getElementById("iconn")
+
+    let liked = "{{p}}"
+    let id = location.href.split("/")[4]
+
+    itag.style = "color:rgb(255, 12, 75); font-size:30px"
+    itag.className = "fa-solid fa-heart"
+    if (liked == "liked") {
+        itag.style.color = "rgb(255, 12, 75)"
+    }
+
+    like.addEventListener("click", async () => {
+        const response = await fetch("/toggle-like/" + id, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+
+        if (response.status != 401) {
+            const state = await response.json()
+
+            if (state[0] == true) {
+                itag.style.color = "rgb(255, 12, 75)"
+            } else {
+                itag.style.color = "#aaa"
+            }
+        }
+    })
+
+    const review = document.getElementById("lv")
+    review.addEventListener("click", () => {
+        location.href = "/review/{{product.id}}"
+    })
+
+    const atc = document.getElementById("add-to-cart")
+    atc.addEventListener("click",() => {
+        location.href = "/api/add-to-cart/"+id
+    })
+</script>
+{% endblock %}
