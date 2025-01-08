@@ -281,11 +281,16 @@ def cart():
     ccart = json.loads(user.cart)
     products = []
 
+    rank = 0
+    if current_user.is_authenticated:
+        usr = Users.query.get(current_user.get_id())
+        rank = usr.rank
+
     for pid in ccart:
         if Products.query.get(pid):
             products.append(Products.query.get(pid))
 
-    return render_template("cart.html", cart=products)
+    return render_template("cart.html", rank=rank)
 
 
 @app.route("/api/remove/<uid>")
@@ -307,4 +312,72 @@ def logout():
 
 @app.route("/your-products")
 def yp():
-    return render_template("prods.html", cart=Products.query.filter_by(author=current_user.get_id()).all())
+    return render_template("prods.html")
+
+@app.route("/api/ypr/")
+def ypr():
+
+    products = Products.query.filter_by(author=current_user.get_id()).all()
+    page = 0
+    data = [[]]
+    i = 0
+    for p in products:
+        if i > 11:
+            page += 1
+            data.append([])
+            i = 0
+
+        txt = ""
+
+        if current_user.get_id() in json.loads(p.likes):
+            txt = "liked"
+
+        data[page].append({
+            "name": p.name,
+            "price": p.price,
+            "img": p.image,
+            "desc": p.description,
+            "id": p.id,
+            "likes": json.loads(p.likes),
+            "liked": txt,
+            "author": p.author
+        })
+        i += 1
+
+    return jsonify(data)
+
+@app.route("/api/ycr/")
+def ycr():
+    user = Users.query.get(current_user.get_id())
+    products = json.loads(user.cart)
+    page = 0
+    data = [[]]
+    i = 0
+    print(products)
+    for pid in products:
+        if i > 11:
+            page += 1
+            data.append([])
+            i = 0
+
+        txt = ""
+        print(pid)
+        p = Products.query.get(pid)
+
+        if current_user.get_id() in json.loads(p.likes):
+            txt = "liked"
+
+
+        data[page].append({
+            "name": p.name,
+            "price": p.price,
+            "img": p.image,
+            "desc": p.description,
+            "id": p.id,
+            "likes": json.loads(p.likes),
+            "liked": txt,
+            "author": p.author
+        })
+        i += 1
+
+    return jsonify(data)
