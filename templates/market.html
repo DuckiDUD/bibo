@@ -1,0 +1,324 @@
+{% extends "base.html" %}
+
+{% block content %}
+<main>
+    <div id="m-con">
+        <div id="searchbar"> <input type="text" id="sb" placeholder="Search Items"> <button id="search"><img src="static/search.svg" alt="_"></button></div>
+        <div id="m-items">
+            
+        </div>
+        <div id="selectors">
+            <button id="lf" class="selectorbtn"><i class="fa-solid fa-angle-left"></i></button>
+            <button id="pag1" style="background-color: #ffea63;" class="selectorbtn">1</button>
+            <button id="pag2" class="selectorbtn">2</button>
+            <span id="span1"></span>
+            <button id="curr" class="selectorbtn">cur</button>
+            <span id="span2"></span>
+            <button id="pagLast" class="selectorbtn">last</button>
+            <button id="ri" class="selectorbtn"><i class="fa-solid fa-angle-right"></i></button>
+        </div>
+    </div>
+</main>
+
+<script>
+    // loading //
+
+    const b1 = document.getElementById("pag1") //
+    const b2 = document.getElementById("pag2") //
+    const bcur = document.getElementById("curr") //
+    const blast = document.getElementById("pagLast") //
+    const bleft = document.getElementById("lf")
+    const bright = document.getElementById("ri")
+    const span1 = document.getElementById("span1")
+    const span2 = document.getElementById("span2")
+    const rank = {{rank}}
+
+    const curUserId = "{{current_user.get_id()}}"
+    console.log(curUserId)
+    let currentPage = 1
+
+    function loadpage(data){
+        const icontainer = document.getElementById("m-items")
+        icontainer.innerHTML = ""
+
+        //<div class="m-item">
+        //    <h1>title</h1>
+        //    <img src="https://www.thedotstore.com/wp-content/uploads/sites/1417/2023/11/image-17.jpeg">
+        //    <div class="m-btns">
+        //        <button style="background-color: rgb(75, 150, 255);"></button>
+        //        <button style="background-color: rgb(255, 237, 75);"></button>
+        //    </div>
+        //</div>
+
+        pageData = data[currentPage-1]
+        if (pageData.length > 0) {
+            for (let i = 0; i < pageData.length; i++){
+                let item = document.createElement("div")
+                item.className = "m-item"
+                let img = document.createElement("img")
+                img.src = pageData[i].img
+                let h1 = document.createElement("h1")
+                h1.innerText = pageData[i].name
+
+                let btns = document.createElement("div")
+                btns.className = "m-btns"
+
+                let view = document.createElement("button")
+                view.style.backgroundColor = "#71bbff"
+                view.innerHTML = "<i class=\"fa-solid fa-eye\" style=\"color: #eee; font-size: 22px\"></i>"
+
+                let like = document.createElement("button")
+                let itag = document.createElement("i")
+                itag.className = "fa-solid fa-heart"
+                itag.style.color = "#aaa"
+                itag.style.fontSize = "30px"
+                
+
+                like.addEventListener("click",async ()=>{
+                    const response = await fetch("/toggle-like/"+pageData[i].id, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                    });
+
+                    if (response.status != 401) {
+                        const state = await response.json()
+                    
+                        if (state[0] == true){
+                            itag.style.color = "rgb(255, 12, 75)"
+                        } else {
+                            itag.style.color = "#aaa"
+                        }
+                    }
+                })
+
+                if (pageData[i].liked == "liked") {
+                    console.log(pageData[i].liked)
+                    itag.style.color = "rgb(255, 12, 75)"
+                }
+
+                like.appendChild(itag)
+                btns.append(like,view)
+                item.append(h1,img,btns)
+
+                icontainer.appendChild(item)
+
+                view.addEventListener("click",() => {
+                    location.href = "/listings/"+pageData[i].id
+                })
+
+                if (pageData[i].author == curUserId | rank == 1) {
+                    let edit = document.createElement("button")
+                    edit.innerHTML = "<i class=\"fa-solid fa-pencil\" style=\"font-size: 20px; color: rgb(100,100,200)\"></i>"
+                    let deleteBtn = document.createElement("button")
+                    deleteBtn.innerHTML = "<i class=\"fa-solid fa-trash\" style=\"font-size: 20px; color: rgb(200,100,100)\"></i>"
+                    btns.append(deleteBtn,edit)
+
+                    deleteBtn.addEventListener("click", () => {
+                        location.href = "/api/delete/"+pageData[i].id
+                    })
+
+                    edit.addEventListener("click", () => {
+                        location.href = "/edit/"+pageData[i].id
+                    })
+                }
+            }
+        }
+    }
+
+    function activateWithIndex(index,d){
+        if (index != currentPage) {
+            if (index == d.length) {
+                blast.style.backgroundColor = "#ffea63";
+                blast.style.color = "#000"
+                if (currentPage == d.length) {
+                    blast.style.color = "#000";
+                    blast.style.backgroundColor = "#eee"
+                } else if (currentPage == 1) {
+                    b1.style.color = "#000";
+                    b1.style.backgroundColor = "#eee"
+                } else if (currentPage == 2) {
+                    b2.style.color = "#000";
+                    b2.style.backgroundColor = "#eee"
+                } else {
+                    bcur.style.color = "#000";
+                    bcur.style.backgroundColor = "#eee"
+                }
+            } else if (index == 1) {
+                b1.style.backgroundColor = "#ffea63";
+                b1.style.color = "#000"
+                if (currentPage == d.length) {
+                    blast.style.color = "#000";
+                    blast.style.backgroundColor = "#eee"
+                } else if (currentPage == 1) {
+                    b1.style.color = "#000";
+                    b1.style.backgroundColor = "#eee"
+                } else if (currentPage == 2) {
+                    b2.style.color = "#000";
+                    b2.style.backgroundColor = "#eee"
+                } else {
+                    bcur.style.color = "#000";
+                    bcur.style.backgroundColor = "#eee"
+                }
+            } else if (index == 2) {
+                b2.style.backgroundColor = "#ffea63";
+                b2.style.color = "#000"
+                if (currentPage == d.length) {
+                    blast.style.color = "#000";
+                    blast.style.backgroundColor = "#eee"
+                } else if (currentPage == 1) {
+                    b1.style.color = "#000";
+                    b1.style.backgroundColor = "#eee"
+                } else if (currentPage == 2) {
+                    b2.style.color = "#000";
+                    b2.style.backgroundColor = "#eee"
+                } else {
+                    bcur.style.color = "#000";
+                    bcur.style.backgroundColor = "#eee"
+                }
+            } else {
+                bcur.style.backgroundColor = "#ffea63";
+                bcur.style.color = "#000"
+                if (currentPage == d.length) {
+                    blast.style.color = "#000";
+                    blast.style.backgroundColor = "#eee"
+                } else if (currentPage == 1) {
+                    b1.style.color = "#000";
+                    b1.style.backgroundColor = "#eee"
+                } else if (currentPage == 2) {
+                    b2.style.color = "#000";
+                    b2.style.backgroundColor = "#eee"
+                }
+            }
+        }
+    }
+
+    function moveto(index,data) {
+        if (data.length > 3) {
+            if (index == 1 || index == 2 || index == data.length){
+                span1.style.display = "block"
+                span2.style.display = "none"
+                b2.style.display = "block"
+                blast.style.display = "block"
+                blast.innerText = String(data.length)
+                bleft.style.display = "block"
+                bright.style.display = "block"
+                b1.style.display = "block"
+                bcur.style.display = "none"
+            } else {
+                span1.style.display = "block"
+                span2.style.display = "block"
+                b2.style.display = "block"
+                blast.style.display = "block"
+                blast.innerText = String(data.length)
+                bleft.style.display = "block"
+                bright.style.display = "block"
+                b1.style.display = "block"
+                bcur.style.display = "block"
+                bcur.innerText = String(index)
+            }
+        }
+        activateWithIndex(index,data)
+        currentPage = index
+        loadpage(data)
+    }
+
+    async function loaditems() {
+        const url = `https://bibo-0iu3.onrender.com/api/search?name={{query}}`;
+        const response = await fetch(url, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+
+        const data = await response.json()
+
+        console.log(data)
+        //controllers
+        if (data.length == 1) {
+            span1.style.display = "none"
+            span2.style.display = "none"
+            b2.style.display = "none"
+            blast.style.display = "none"
+            bleft.style.display = "none"
+            bright.style.display = "none"
+            b1.style.display = "block"
+            bcur.style.display = "none"
+        } else if (data.length == 2){
+            span1.style.display = "none"
+            span2.style.display = "none"
+            b2.style.display = "block"
+            blast.style.display = "none"
+            bleft.style.display = "none"
+            bright.style.display = "none"
+            b1.style.display = "block"
+            bcur.style.display = "none"
+        } else if (data.length == 3){
+            span1.style.display = "none"
+            span2.style.display = "none"
+            b2.style.display = "block"
+            blast.style.display = "block"
+            blast.innerText = String(data.length)
+            bleft.style.display = "none"
+            bright.style.display = "none"
+            b1.style.display = "block"
+            bcur.style.display = "none"
+        } else {
+            span1.style.display = "block"
+            span2.style.display = "none"
+            b2.style.display = "block"
+            blast.style.display = "block"
+            blast.innerText = String(data.length)
+            bleft.style.display = "block"
+            bright.style.display = "block"
+            b1.style.display = "block"
+            bcur.style.display = "none"
+        }
+        //loading
+        moveto(1,data)
+
+        //pagehandle
+        b1.addEventListener("click", ()=>{
+            moveto(1,data)
+        })
+    
+        b2.addEventListener("click", ()=>{
+            moveto(2,data)
+        })
+    
+        blast.addEventListener("click", ()=>{
+            moveto(data.length,data)
+        })
+
+        bleft.addEventListener("click", ()=>{
+            if (currentPage > 1) {
+                moveto(currentPage - 1,data)
+            }
+        })
+
+        bright.addEventListener("click", ()=>{
+            if (currentPage < data.length) {
+                moveto(currentPage + 1,data)
+            }
+        })
+    }
+
+    loaditems()
+
+    // search //
+    const sbtn = document.getElementById("search")
+    const sb = document.getElementById("sb")
+    sb.value = "{{query}}"
+    sbtn.addEventListener("click", () => {
+        location.href = "market?query="+sb.value
+    })
+</script>
+
+<style>
+    html{
+        overflow: hidden;
+    }
+</style>
+{% endblock %}

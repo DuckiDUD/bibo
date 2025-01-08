@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block content %}
+<form id="sell-f" method="post" enctype="multipart/form-data">
+    {{ form.hidden_tag() }}
+
+    <div id="file-uploader">
+        {{ form.f1(class="fip", id="f1", accept=".jpg, .jpeg, .png, .webp, .tiff") }}
+        <img id="disp">
+        <div id="temp">
+            <i class="fa-regular fa-image" style="font-size: 100px; color: #ccc"></i>
+            <h1>Upload Image</h1>
+        </div>
+    </div>
+
+    <div id="i1">
+        <h1>Product Name</h1>
+        {{ form.name(class="tip", placeholder="Cool Camera") }}
+    </div>
+
+    <div id="i2">
+        <h1>Product Price</h1>
+        {{ form.price(class="tip", placeholder="799") }}
+    </div>
+
+    <div id="i3">
+        {{ form.sell(class="tip") }}
+    </div>
+
+    <div id="i4">
+        <h1>Description</h1>
+        {{ form.description(class="tip", placeholder="Product Description") }}
+    </div>
+</form>
+
+<script>
+    const dropContainer = document.getElementById("f1")
+    dropContainer.addEventListener("change",(evt) => {
+        var tgt = evt.target || window.event.srcElement,
+        files = tgt.files;
+    
+        // FileReader support
+        if (FileReader && files && files.length) {
+            var fr = new FileReader();
+            fr.onload = function () {
+                document.getElementById("disp").style.display = "Block"
+                document.getElementById("temp").style.display = "none"
+                document.getElementById("disp").src = fr.result;
+            }
+            fr.readAsDataURL(files[0]);
+        }
+    })
+</script>
+{% endblock %}
